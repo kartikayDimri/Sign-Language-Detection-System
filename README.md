@@ -1,6 +1,6 @@
-# ✋ Signfinity – Real-Time Hand Gesture Recognition
+# ✋ Sign language detection system – Real-Time Hand Gesture Recognition
 
-**Signfinity** is a real-time hand gesture recognition system using a webcam to identify five predefined gestures: "Hello", "Yes", "No", "Thanks", and "Sorry". It leverages **MediaPipe** for hand landmark detection and a machine learning pipeline involving **PCA** and **Random Forest Classifier** to make accurate predictions in real time.
+this is a real-time hand gesture recognition system using a webcam to identify five predefined gestures: "Hello", "Yes", "No", "Thanks", and "Sorry". It leverages **MediaPipe** for hand landmark detection and a machine learning pipeline involving **PCA** and **Random Forest Classifier** to make accurate predictions in real time.
 
 ---
 
@@ -135,10 +135,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## 👨‍💻 Author
 
-**Divyam Sethi**  
-🔗 [LinkedIn](https://www.linkedin.com/in/divyam-sethi-3a5141232)  
-📧 [Email](mailto:divyamsethi1804@gmail.com)
-
+Kartikay Dimri
+gmail-dimrikartikay@gmail.com
 ---
 
 ## ⭐️ Support
