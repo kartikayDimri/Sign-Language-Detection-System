@@ -1,4 +1,4 @@
-# ✋ Sign language detetcton system – Real-Time Hand Gesture Recognition
+# ✋ Sign language detection system – Real-Time Hand Gesture Recognition
 
 this is a real-time hand gesture recognition system using a webcam to identify five predefined gestures: "Hello", "Yes", "No", "Thanks", and "Sorry". It leverages **MediaPipe** for hand landmark detection and a machine learning pipeline involving **PCA** and **Random Forest Classifier** to make accurate predictions in real time.
 
