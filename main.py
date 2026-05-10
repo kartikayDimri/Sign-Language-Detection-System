@@ -11,7 +11,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
 
 # Load the dataset
-dataset_path = 'home/hand_sign_landmarks.csv'
+dataset_path = 'hand_sign_landmarks.csv'
 dataset = pd.read_csv(dataset_path)
 
 # Prepare the data
@@ -52,10 +52,31 @@ grid_search.fit(X_pca, y)
 best_rf = grid_search.best_estimator_
 print(f"Best Parameters: {grid_search.best_params_}")
 
-# Initialize Mediapipe Hands with higher thresholds for better accuracy
-mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.8, min_tracking_confidence=0.8)
-mp_draw = mp.solutions.drawing_utils
+# Initialize Mediapipe Hands
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
+
+# Download model if needed
+import urllib.request
+import os
+
+model_path = 'hand_landmarker.task'
+if not os.path.exists(model_path):
+    print("Downloading hand landmarker model...")
+    url = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task'
+    urllib.request.urlretrieve(url, model_path)
+    print("Model downloaded successfully!")
+
+# Create hand landmarker
+base_options = python.BaseOptions(model_asset_path=model_path)
+options = vision.HandLandmarkerOptions(
+    base_options=base_options,
+    num_hands=1,
+    min_hand_detection_confidence=0.8,
+    min_hand_presence_confidence=0.8,
+    min_tracking_confidence=0.8
+)
+detector = vision.HandLandmarker.create_from_options(options)
 
 # Function to recognize gesture with confidence
 def recognize_gesture_and_confidence(landmarks):
@@ -83,28 +104,33 @@ while cap.isOpened():
         print("Failed to read frame from webcam")
         break
 
-    # Convert frame to RGB
+    # Convert frame to RGB and create MediaPipe Image
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = hands.process(rgb_frame)
+    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+    
+    # Detect hands
+    results = detector.detect(mp_image)
 
-    if results.multi_hand_landmarks:
-        for hand_landmarks in results.multi_hand_landmarks:
-            landmarks = [(lm.x, lm.y, lm.z) for lm in hand_landmarks.landmark]
+    if results.hand_landmarks:
+        for hand_landmarks in results.hand_landmarks:
+            landmarks = [(lm.x, lm.y, lm.z) for lm in hand_landmarks]
 
             # Recognize gesture
             gesture, confidence = recognize_gesture_and_confidence(landmarks)
 
             print(f"Recognized gesture: {gesture}, Confidence: {confidence:.2f}")
 
-            # Draw landmarks
-            mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-
             # Get bounding box
             h, w, c = frame.shape
-            x_min = int(min([lm.x for lm in hand_landmarks.landmark]) * w)
-            x_max = int(max([lm.x for lm in hand_landmarks.landmark]) * w)
-            y_min = int(min([lm.y for lm in hand_landmarks.landmark]) * h)
-            y_max = int(max([lm.y for lm in hand_landmarks.landmark]) * h)
+            x_min = int(min([lm.x for lm in hand_landmarks]) * w)
+            x_max = int(max([lm.x for lm in hand_landmarks]) * w)
+            y_min = int(min([lm.y for lm in hand_landmarks]) * h)
+            y_max = int(max([lm.y for lm in hand_landmarks]) * h)
+
+            # Draw landmarks
+            for lm in hand_landmarks:
+                cx, cy = int(lm.x * w), int(lm.y * h)
+                cv2.circle(frame, (cx, cy), 5, (0, 255, 0), -1)
 
             # Draw bounding box
             cv2.rectangle(frame, (x_min - 10, y_min - 10), (x_max + 10, y_max + 10), (0, 255, 0), 2)
